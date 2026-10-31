@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}</style>
+<title>Comity</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#12171B">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&display=swap">
+<style>
+/* Layout: one phone-width column; dark by default, light only when chosen in Settings */
+:root{
+  --bg:#12171B; --surface:#1A2126; --surface2:#232C32; --line:#2E3940; --fg:#E7EDEF; --muted:#93A2A9;
+  --green:#36C47F; --green-ink:#0B2A1A; --blue:#5B9CF2; --danger:#FF8A7A; --night:#07090A;
+  --s0:#36C47F; --s1:#5B9CF2; --s2:#F2B544; --s3:#FF7A6B; --s4:#B48CF2; --s5:#4CC9F0;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme:dark;
+}
+:root[data-look="light"]{
+  --bg:#F3F6F4; --surface:#FFFFFF; --surface2:#E9EFEB; --line:#D3DDD7; --fg:#14201A; --muted:#566760;
+  --green:#1F9E5F; --green-ink:#FFFFFF; --blue:#1E6FD9; --danger:#C43D2B; --night:#07090A;
+  --s0:#1F9E5F; --s1:#1E6FD9; --s2:#C98A0E; --s3:#D9503D; --s4:#7B4FD0; --s5:#0F8FB8;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.55;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 40px}
+#app{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--display);font-weight:700;margin:0;text-wrap:balance;line-height:1.2}
+h1{font-size:1.6rem} h2{font-size:1.25rem} h3{font-size:1.05rem}
+p{margin:0}
+.muted{color:var(--muted)} .small{font-size:.875rem}
+.label{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:1.35rem}
+.brand svg{width:40px;height:40px;flex:none}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:12px;font-weight:700;background:var(--surface2);border:1px solid var(--line)}
+.btn.primary{background:var(--green);color:var(--green-ink);border-color:transparent}
+.btn.danger{color:var(--danger)}
+.btn.block{width:100%}
+.iconbtn{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line)}
+.iconbtn svg{width:22px;height:22px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.start{display:flex;flex-direction:column;align-items:center;gap:14px;padding:22px 0 8px;text-align:center}
+.mic{width:132px;height:132px;border-radius:50%;background:#1A2126;color:#F2F4F5;border:4px solid #56646E;display:grid;place-items:center}
+.mic:hover{border-color:#7A8892}
+.mic svg{width:52px;height:52px}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:left;display:flex;flex-direction:column;gap:8px;width:100%}
+.tag{display:inline-block;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--surface2);color:var(--muted)}
+.share{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--surface2)}
+.share span{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.875rem}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:baseline}
+.timeline{position:relative;height:34px;border-radius:8px;background:var(--surface2);overflow:hidden}
+.timeline span{position:absolute;height:10px;border-radius:2px}
+.axis{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:var(--surface2);border-radius:10px;padding:10px}
+.stat b{display:block;font-family:var(--display);font-size:1.25rem;font-variant-numeric:tabular-nums}
+.stat small{color:var(--muted);font-size:.78rem;line-height:1.3;display:block}
+.person-head{display:flex;align-items:center;gap:10px}
+.swatch{width:14px;height:14px;border-radius:4px;flex:none}
+.big{font-family:var(--display);font-weight:700;font-size:2rem;font-variant-numeric:tabular-nums;line-height:1}
+.note{border-left:3px solid var(--blue);padding-left:12px;border-radius:0}
+.turn{display:flex;flex-direction:column;gap:4px;padding:10px 0;border-bottom:1px solid var(--line)}
+.turn.cue{opacity:.7;font-size:.9rem}
+.turn .who{font-weight:700;font-size:.875rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.t-int{background:color-mix(in srgb,var(--s3) 22%,transparent);color:var(--fg)}
+.t-jump{background:color-mix(in srgb,var(--s2) 24%,transparent);color:var(--fg)}
+.t-shift{background:color-mix(in srgb,var(--s4) 24%,transparent);color:var(--fg)}
+.t-q{background:color-mix(in srgb,var(--s0) 24%,transparent);color:var(--fg)}
+label{font-weight:700;font-size:.9rem}
+input[type=text],input[type=password]{width:100%;min-height:46px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);color:var(--fg);font:inherit;padding:0 12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:6px 12px;border-radius:999px;background:var(--surface2);border:1px solid var(--line);font-size:.875rem}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--surface2);border-radius:12px;padding:4px;gap:4px}
+.seg button{min-height:40px;border-radius:9px;font-weight:700;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);border:1px solid var(--line)}
+.listen{position:fixed;inset:0;background:var(--night);color:#C9D3D6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;z-index:20;
+  padding:max(24px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));text-align:center}
+.listen .time{font-family:var(--display);font-size:3.4rem;font-variant-numeric:tabular-nums;color:#E7EDEF}
+.pulse{width:20px;height:20px;border-radius:50%;background:#36C47F;animation:pulse 2s ease-in-out infinite}
+.pulse.paused{background:#F2B544;animation:none}
+@keyframes pulse{0%,100%{opacity:.35;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none}}
+.listen .btn{background:#1A2126;border-color:#2E3940;color:#E7EDEF;min-width:130px}
+.listen .btn.stop{background:#36C47F;color:#0B2A1A;border-color:transparent}
+.steps{display:flex;flex-direction:column;gap:12px}
+.step{display:flex;gap:12px;align-items:center}
+.step i{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center;font-style:normal;font-size:.75rem}
+.step.on i{border-color:var(--blue);border-top-color:transparent;animation:spin 1s linear infinite}
+.step.done i{background:var(--green);border-color:var(--green);color:var(--green-ink)}
+.step.done i::after{content:"✓"}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.step.on i{animation:none;border-top-color:var(--blue)}}
+.err{color:var(--danger)}
+.confirm{background:color-mix(in srgb,var(--danger) 12%,var(--surface));border:1px solid color-mix(in srgb,var(--danger) 40%,var(--line))}
+</style>
+
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const ICON = `<svg viewBox="0 0 140 140" aria-hidden="true"><rect x="2" y="2" width="136" height="136" rx="26" fill="#1A2126" stroke="#56646E" stroke-width="4"/><path d="M56 110 L18 130 L28 102 C16 92 10 78 10 60 C10 32 32 10 58 10 L82 10 C108 10 130 32 130 60 C130 88 108 110 82 110 Z" fill="#F2F4F5"/><text x="70" y="69" text-anchor="middle" font-family="Bricolage Grotesque, Segoe UI, sans-serif" font-weight="700" font-size="30" fill="#1A2126">comity</text></svg>`;
+const I = {
+  mic:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4M8 21h8"/></svg>`,
+  gear:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>`,
+  back:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>`
+};
+
+/* ---------- storage ---------- */
+const ls = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
+};
+const S = {
+  view:'home', conv:null, msg:'', confirm:null,
+  history: ls.get('comity.history', []),
+  names: ls.get('comity.names', []),
+  keys: ls.get('comity.keys', {aai:'', claude:''}),
+  look: ls.get('comity.look', 'dark'),
+  rec:null, proc:null
+};
+function saveHistory(){ if(!ls.set('comity.history', S.history)) S.msg = 'Your phone storage for Comity is full. Delete an old conversation to save new ones.'; }
+function upsert(conv){ const i = S.history.findIndex(c => c.id === conv.id); if(i >= 0) S.history[i] = conv; else S.history.unshift(conv); saveHistory(); }
+document.documentElement.dataset.look = S.look;
+
+/* ---------- helpers ---------- */
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const mmss = ms => { const s = Math.max(0, Math.round(ms/1000)); const h = Math.floor(s/3600), m = Math.floor(s%3600/60), x = s%60; return (h ? h+':'+String(m).padStart(2,'0') : m) + ':' + String(x).padStart(2,'0'); };
+const mins = ms => { const s = Math.round(ms/1000); return s < 60 ? s+' sec' : (s/60).toFixed(s < 600 ? 1 : 0)+' min'; };
+const pct = x => Math.round(x*100)+'%';
+const dateStr = t => new Date(t).toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'}) + ' · ' + new Date(t).toLocaleTimeString(undefined, {hour:'numeric', minute:'2-digit'});
+const speakersOf = conv => { const seen = []; conv.turns.forEach(t => { if(!seen.includes(t.sp)) seen.push(t.sp); }); return seen; };
+const colorOf = (conv, sp) => `var(--s${speakersOf(conv).indexOf(sp) % 6})`;
+const nameOf = (conv, sp) => (conv.names && conv.names[sp]) || 'Speaker ' + sp;
+
+/* ---------- metrics ---------- */
+const RESPONSE = ['follow_up','question_about','shift','topic_jump'];
+function stats(conv){
+  const T = conv.turns, sps = speakersOf(conv);
+  const dur = conv.durationMs || Math.max(...T.map(t => t.end), 1);
+  const P = {};
+  sps.forEach(sp => P[sp] = {sp, talk:0, turns:0, longest:0, intrMade:0, intrRecv:0, questions:0, cues:0, shifts:0, jumps:0, support:0, eligible:0});
+  T.forEach((t, i) => {
+    const p = P[t.sp], d = t.end - t.start;
+    p.talk += d;
+    if(t.rel !== 'backchannel'){ p.turns++; p.longest = Math.max(p.longest, d); }
+    if(t.rel === 'backchannel') p.cues++;
+    if(t.rel === 'question_about'){ p.questions++; }
+    if(t.rel === 'shift') p.shifts++;
+    if(t.rel === 'topic_jump') p.jumps++;
+    if(RESPONSE.includes(t.rel)){ p.eligible++; if(t.rel === 'follow_up' || t.rel === 'question_about') p.support++; }
+    if(t.intr){
+      p.intrMade++;
+      let j = i - 1; while(j >= 0 && T[j].sp === t.sp) j--;
+      if(j >= 0) P[T[j].sp].intrRecv++;
+    }
+  });
+  const total = Object.values(P).reduce((a, p) => a + p.talk, 0) || 1;
+  const people = sps.map(sp => ({...P[sp], share: P[sp].talk / total, avg: P[sp].turns ? P[sp].talk / P[sp].turns : 0}));
+  return {dur, people, interruptions: T.filter(t => t.intr).length, labeled: T.some(t => t.rel)};
+}
+
+/* ---------- sample conversation ---------- */
+const SAMPLE = (() => {
+  const raw = [
+    ['A',0,74,"So did I ever tell you about the time the old Ford quit on us outside Tuscaloosa? Middle of July, no air conditioning, and your grandmother had a three-layer cake in the back seat for the church supper.",'opening',0],
+    ['B',74,76,"Mm-hm.",'backchannel',0],
+    ['A',76,131,"So we're sitting on the shoulder, cake's sliding around, and this fella in a feed truck pulls over. Turns out he went to school with my brother. Towed us all the way into town with a chain.",'continue',0],
+    ['C',131,138,"Wait, was that the blue truck in the picture at your house?",'question_about',0],
+    ['A',138,176,"That's the one. Painted it myself the next spring. Two coats, and it still came out streaky on the tailgate.",'follow_up',0],
+    ['B',176,192,"I remember that truck. Didn't you end up selling it to Mr. Hall down the road?",'question_about',0],
+    ['A',192,236,"Sold it? No, he traded me a boat motor for it. Ran for twenty years, that motor. Now that's a story.",'follow_up',0],
+    ['C',236,240,"Ha. A boat motor.",'backchannel',0],
+    ['B',240,262,"Speaking of trades, I've been thinking about selling my old table saw. It's just sitting in the garage taking up",'new_topic_after_finished',0],
+    ['A',258,300,"You can't sell that saw, I gave you that saw. Let me tell you what that saw cost back in '94. I had to work two Saturdays at the yard for it.",'shift',1],
+    ['B',300,302,"Yeah.",'backchannel',0],
+    ['A',302,330,"And the fence on it is still true. They don't build them like that anymore.",'continue',0],
+    ['C',330,352,"Grandpa, we're doing a woodworking unit in shop class. I'm making a birdhouse.",'follow_up',0],
+    ['A',352,372,"A birdhouse! When I was your age I built a whole shed with my daddy. Roof and everything.",'shift',0],
+    ['C',372,375,"Cool.",'backchannel',0],
+    ['B',375,392,"What kind of wood are you using for the birdhouse?",'question_about',0],
+    ['C',392,410,"Cedar. My teacher says it holds up outside, and we get to pick our own",'follow_up',0],
+    ['A',408,450,"Cedar's fine but you've got to seal it. Hey, did you know the waitress here used to work at the mill with your uncle?",'topic_jump',1],
+    ['B',450,458,"I didn't know that. Which mill?",'question_about',0],
+    ['A',458,520,"The paper mill on the river. She ran the loader for six years before they shut it down. Tough lady.",'follow_up',0],
+    ['C',520,523,"Huh.",'backchannel',0],
+    ['B',523,540,"Before I forget, are we still on for fishing next Saturday?",'new_topic_after_finished',0],
+    ['A',540,560,"Wouldn't miss it. I'll bring the good bait.",'follow_up',0],
+    ['C',560,566,"Can I come too?",'question_about',0],
+    ['A',566,580,"Of course you can. You can drive the boat.",'follow_up',0]
+  ];
+  return {
+    id:'sample', sample:true, created: Date.parse('2026-10-31T08:15:00'), durationMs: 580000,
+    names:{A:'Dad', B:'Me', C:'Son'},
+    turns: raw.map(r => ({sp:r[0], start:r[1]*1000, end:r[2]*1000, text:r[3], rel:r[4], intr:!!r[5]})),
+    ai:{
+      overall:"A storyteller-led breakfast. Dad held the floor with long stories and stayed on the subject in front of him, but often turned other people's comments into his own stories. The questions that kept the conversation moving came mostly from Me.",
+      people:{
+        A:"Held the floor for most of the meal. Answered questions fully, but twice cut in while someone was mid-thought and twice steered the topic back to his own experience.",
+        B:"Mostly listened. Asked three questions about what others said, used short listening cues, and only changed topics after a story had wrapped up.",
+        C:"Engaged in short bursts: asked about the truck and shared his birdhouse project. Was cut off mid-answer once and spoke less after that."
+      }
+    }
+  };
+})();
+
+/* ---------- render ---------- */
+const app = document.getElementById('app');
+function go(view, extra){ S.view = view; S.confirm = null; if(extra) Object.assign(S, extra); render(); window.scrollTo(0, 0); }
+function header(title, backTo){
+  return `<div class="top">${backTo ? `<button class="iconbtn" data-go="${backTo}" aria-label="Back">${I.back}</button>` : `<div class="brand">${ICON}<span>comity</span></div>`}
+    ${title ? `<h2 style="flex:1">${esc(title)}</h2>` : ''}
+    ${backTo ? '' : `<button class="iconbtn" data-go="settings" aria-label="Settings">${I.gear}</button>`}</div>`;
+}
+function shareBar(conv, st){
+  return `<div class="share" role="img" aria-label="Talk share">${st.people.map(p => `<span style="width:${p.share*100}%;background:${colorOf(conv,p.sp)}"></span>`).join('')}</div>`;
+}
+function convItem(conv){
+  const st = stats(conv);
+  return `<button class="item" data-open="${esc(conv.id)}">
+    <div class="row between"><b>${esc(conv.sample ? 'Sample breakfast' : dateStr(conv.created))}</b><span class="tag">${mmss(st.dur)}</span></div>
+    ${shareBar(conv, st)}
+    <div class="legend">${st.people.map(p => `<span><i class="dot" style="background:${colorOf(conv,p.sp)}"></i>${esc(nameOf(conv,p.sp))} ${pct(p.share)}</span>`).join('')}</div>
+  </button>`;
+}
+
+const views = {
+  home(){
+    const ready = S.keys.aai && S.keys.claude;
+    return `${header()}
+    ${S.msg ? `<div class="card"><p class="err">${esc(S.msg)}</p></div>` : ''}
+    <div class="start">
+      <button class="mic" id="startBtn" aria-label="Start listening">${I.mic}</button>
+      <h1>Start listening</h1>
+      <p class="muted small">Set the phone face-up in the middle of the table.<br>Audio is deleted as soon as it's analyzed.</p>
+      ${ready ? '' : `<p class="small"><button class="chip" data-go="settings">Add your keys in Settings</button> to record a real conversation.</p>`}
+    </div>
+    <div class="list">
+      <span class="label">Try it</span>
+      ${convItem(SAMPLE)}
+    </div>
+    <div class="list">
+      <span class="label">Your conversations</span>
+      ${S.history.length ? S.history.map(convItem).join('') : `<p class="muted small">Nothing yet. Your conversations will show up here, saved only on this phone.</p>`}
+    </div>`;
+  },
+
+  listening(){
+    const r = S.rec;
+    return `<div class="listen">
+      <div class="pulse ${r.paused ? 'paused' : ''}"></div>
+      <div class="time" id="clock">${mmss(r.elapsed())}</div>
+      <p>${r.paused ? 'Paused' : 'Listening'}</p>
+      <p class="small" style="opacity:.7;max-width:30ch">Keep this screen open. Comity keeps the screen awake while it listens.</p>
+      <div class="row" style="justify-content:center">
+        <button class="btn" id="pauseBtn">${r.paused ? 'Resume' : 'Pause'}</button>
+        <button class="btn stop" id="stopBtn">Stop</button>
+      </div>
+    </div>`;
+  },
+
+  processing(){
+    const p = S.proc, names = ['Uploading audio','Telling voices apart and writing the transcript','Deleting the audio','Reading how everyone listened'];
+    return `${header('Working on it')}
+    <div class="card">
+      <div class="steps">${names.map((n, i) => `<div class="step ${i < p.step ? 'done' : i === p.step && !p.error ? 'on' : ''}"><i></i><span>${n}</span></div>`).join('')}</div>
+      <p class="muted small">A 30-minute conversation usually takes a few minutes. Keep this screen open.</p>
+      ${p.error ? `<p class="err">${esc(p.error)}</p>
+        <div class="row"><button class="btn primary" id="retryBtn">Try again</button>${p.step >= 3 && p.conv ? `<button class="btn" id="skipAiBtn">Skip analysis for now</button>` : ''}<button class="btn" data-go="home">Cancel</button></div>` : ''}
+    </div>`;
+  },
+
+  naming(){
+    const c = S.conv, st = stats(c);
+    return `${header('Who was who?')}
+    <p class="muted">Comity heard ${st.people.length} ${st.people.length === 1 ? 'voice' : 'voices'}. Name each one from what they said.</p>
+    ${st.people.map(p => {
+      const q = (c.turns.find(t => t.sp === p.sp && t.text.split(' ').length > 6) || c.turns.find(t => t.sp === p.sp)).text;
+      return `<div class="card">
+        <div class="person-head"><span class="swatch" style="background:${colorOf(c,p.sp)}"></span><h3>Speaker ${esc(p.sp)}</h3><span class="tag">${mins(p.talk)}</span></div>
+        <p class="muted small">“${esc(q.length > 140 ? q.slice(0,140)+'…' : q)}”</p>
+        <label for="name-${esc(p.sp)}">Name</label>
+        <input type="text" id="name-${esc(p.sp)}" value="${esc(c.names[p.sp] || '')}" placeholder="Speaker ${esc(p.sp)}" autocomplete="off">
+        ${S.names.length ? `<div class="chips">${S.names.map(n => `<button class="chip" data-fill="${esc(p.sp)}" data-name="${esc(n)}">${esc(n)}</button>`).join('')}</div>` : ''}
+      </div>`;}).join('')}
+    <button class="btn primary block" id="saveNamesBtn">See results</button>`;
+  },
+
+  results(){
+    const c = S.conv, st = stats(c);
+    const ticks = [0, .25, .5, .75, 1].map(f => `<span>${mmss(st.dur*f)}</span>`).join('');
+    return `${header(c.sample ? 'Sample breakfast' : dateStr(c.created), 'home')}
+    ${c.sample ? `<p class="muted small">Example conversation so you can see how results look.</p>` : ''}
+    <div class="card">
+      <span class="label">Who held the floor</span>
+      ${shareBar(c, st)}
+      <div class="legend">${st.people.map(p => `<span><i class="dot" style="background:${colorOf(c,p.sp)}"></i>${esc(nameOf(c,p.sp))} ${pct(p.share)}</span>`).join('')}</div>
+      <span class="label" style="margin-top:6px">When each person talked</span>
+      <div class="timeline" role="img" aria-label="Conversation timeline">${c.turns.map(t => {
+        const lane = speakersOf(c).indexOf(t.sp), n = speakersOf(c).length;
+        const top = n > 1 ? 4 + lane * (26 / (n)) : 12;
+        return `<span style="left:${t.start/st.dur*100}%;width:${Math.max(.4,(t.end-t.start)/st.dur*100)}%;top:${top}px;height:${Math.max(4, 26/n - 2)}px;background:${colorOf(c,t.sp)}"></span>`;}).join('')}</div>
+      <div class="axis">${ticks}</div>
+      <div class="row small muted"><span>${mmss(st.dur)} total</span><span>·</span><span>${st.interruptions} interruption${st.interruptions === 1 ? '' : 's'}</span></div>
+    </div>
+    ${c.ai && c.ai.overall ? `<div class="card"><span class="label">Conversation pattern</span><p class="note">${esc(c.ai.overall)}</p></div>` :
+      `<div class="card"><p>The listening analysis hasn't run yet. Talk time is ready; interruptions and follow-ups need the analysis.</p>
+       <button class="btn primary" id="rerunBtn">Run the analysis</button>${S.msg ? `<p class="err small">${esc(S.msg)}</p>` : ''}</div>`}
+    ${st.people.map(p => `<div class="card">
+      <div class="person-head"><span class="swatch" style="background:${colorOf(c,p.sp)}"></span><h3 style="flex:1">${esc(nameOf(c,p.sp))}</h3></div>
+      <div class="row" style="align-items:baseline;gap:6px 14px"><span class="big">${pct(p.share)}</span><span class="muted">talking · ${pct(1-p.share)} listening</span></div>
+      ${c.ai && c.ai.people && c.ai.people[p.sp] ? `<p class="note">${esc(c.ai.people[p.sp])}</p>` : ''}
+      <div class="stats">
+        <div class="stat"><b>${mins(p.talk)}</b><small>talk time</small></div>
+        <div class="stat"><b>${p.turns}</b><small>turns · avg ${mins(p.avg)}</small></div>
+        ${st.labeled ? `
+        <div class="stat"><b>${p.eligible ? pct(p.support/p.eligible) : '—'}</b><small>stayed with the speaker (${p.support} of ${p.eligible} replies)</small></div>
+        <div class="stat"><b>${p.questions}</b><small>questions about what others said</small></div>
+        <div class="stat"><b>${p.intrMade}</b><small>cut someone off</small></div>
+        <div class="stat"><b>${p.intrRecv}</b><small>got cut off</small></div>
+        <div class="stat"><b>${p.shifts}</b><small>turned it back to self</small></div>
+        <div class="stat"><b>${p.jumps}</b><small>changed the subject early</small></div>
+        <div class="stat"><b>${p.cues}</b><small>listening cues (“mm-hm”)</small></div>
+        <div class="stat"><b>${mins(p.longest)}</b><small>longest turn</small></div>` : ''}
+      </div>
+    </div>`).join('')}
+    <button class="btn block" data-go="transcript">Review the transcript</button>
+    ${c.sample ? '' : `<div class="row"><button class="btn" id="renameBtn">Rename speakers</button><button class="btn danger" id="delBtn">Delete</button></div>
+    ${S.confirm === 'del' ? `<div class="card confirm"><p>Delete this conversation from your phone? This can't be undone.</p><div class="row"><button class="btn danger" id="delYes">Delete</button><button class="btn" id="delNo">Keep it</button></div></div>` : ''}`}`;
+  },
+
+  transcript(){
+    const c = S.conv, tags = {question_about:['Question','t-q'], shift:['Turned to self','t-shift'], topic_jump:['Subject change','t-jump']};
+    return `${header('Transcript', 'results')}
+    <div class="legend small muted">${speakersOf(c).map(sp => `<span><i class="dot" style="background:${colorOf(c,sp)}"></i>${esc(nameOf(c,sp))}</span>`).join('')}</div>
+    <div>${c.turns.map(t => `<div class="turn ${t.rel === 'backchannel' ? 'cue' : ''}">
+      <div class="who"><i class="dot" style="background:${colorOf(c,t.sp)};margin:0"></i>${esc(nameOf(c,t.sp))}<span class="muted small" style="font-weight:400">${mmss(t.start)}</span>
+        ${t.intr ? `<span class="tag t-int">Cut in</span>` : ''}${tags[t.rel] ? `<span class="tag ${tags[t.rel][1]}">${tags[t.rel][0]}</span>` : ''}</div>
+      <p>${esc(t.text)}</p></div>`).join('')}</div>`;
+  },
+
+  settings(){
+    return `${header('Settings', 'home')}
+    ${S.msg ? `<div class="card"><p>${esc(S.msg)}</p></div>` : ''}
+    <div class="card">
+      <h3>Look</h3>
+      <div class="seg"><button data-look="dark" aria-pressed="${S.look === 'dark'}">Dark</button><button data-look="light" aria-pressed="${S.look === 'light'}">Light</button></div>
+    </div>
+    <div class="card">
+      <h3>Service keys</h3>
+      <p class="muted small">Keys stay on this phone only. They're never put in the app's code.</p>
+      <label for="key-aai">AssemblyAI key (voices and transcript)</label>
+      <input type="password" id="key-aai" value="${esc(S.keys.aai)}" autocomplete="off" spellcheck="false">
+      <label for="key-claude">Claude API key (listening analysis)</label>
+      <input type="password" id="key-claude" value="${esc(S.keys.claude)}" autocomplete="off" spellcheck="false">
+      <button class="btn primary" id="saveKeysBtn">Save keys</button>
+    </div>
+    <div class="card">
+      <h3>Saved names</h3>
+      <div class="chips">${S.names.length ? S.names.map(n => `<button class="chip" data-delname="${esc(n)}" aria-label="Remove ${esc(n)}">${esc(n)} ✕</button>`).join('') : '<span class="muted small">Names you use get saved here.</span>'}</div>
+      <div class="row" style="flex-wrap:nowrap"><input type="text" id="newName" placeholder="Add a name" autocomplete="off"><button class="btn" id="addNameBtn">Add</button></div>
+    </div>
+    <div class="card">
+      <h3>Your conversations</h3>
+      <p class="muted small">${S.history.length} saved on this phone · about ${Math.ceil(JSON.stringify(S.history).length/1024)} KB</p>
+      <button class="btn danger" id="wipeBtn">Delete all conversations</button>
+      ${S.confirm === 'wipe' ? `<div class="card confirm"><p>Delete every saved conversation? This can't be undone.</p><div class="row"><button class="btn danger" id="wipeYes">Delete all</button><button class="btn" id="wipeNo">Keep them</button></div></div>` : ''}
+    </div>`;
+  }
+};
+
+function render(){
+  app.innerHTML = views[S.view]();
+  if(S.view !== 'settings' && S.view !== 'results') S.msg = '';
+}
+
+/* ---------- events ---------- */
+app.addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  if(b.dataset.go){ S.msg = ''; return go(b.dataset.go); }
+  if(b.dataset.open){ const c = b.dataset.open === 'sample' ? SAMPLE : S.history.find(x => x.id === b.dataset.open); if(c) go('results', {conv:c, msg:''}); return; }
+  if(b.dataset.fill){ const el = document.getElementById('name-' + b.dataset.fill); if(el) el.value = b.dataset.name; return; }
+  if(b.dataset.look){ S.look = b.dataset.look; ls.set('comity.look', S.look); document.documentElement.dataset.look = S.look; return render(); }
+  if(b.dataset.delname){ S.names = S.names.filter(n => n !== b.dataset.delname); ls.set('comity.names', S.names); return render(); }
+  switch(b.id){
+    case 'startBtn': return startListening();
+    case 'pauseBtn': return togglePause();
+    case 'stopBtn': return stopListening();
+    case 'retryBtn': return runPipeline();
+    case 'skipAiBtn': { const c = S.proc.conv; upsert(c); return go('naming', {conv:c}); }
+    case 'saveNamesBtn': {
+      const c = S.conv;
+      speakersOf(c).forEach(sp => { const v = (document.getElementById('name-' + sp).value || '').trim(); if(v){ c.names[sp] = v; if(!S.names.includes(v)) S.names.push(v); } else delete c.names[sp]; });
+      ls.set('comity.names', S.names); upsert(c); return go('results');
+    }
+    case 'renameBtn': return go('naming');
+    case 'delBtn': S.confirm = 'del'; return render();
+    case 'delNo': S.confirm = null; return render();
+    case 'delYes': S.history = S.history.filter(x => x.id !== S.conv.id); saveHistory(); return go('home');
+    case 'rerunBtn': return rerunAnalysis(b);
+    case 'saveKeysBtn':
+      S.keys = {aai: document.getElementById('key-aai').value.trim(), claude: document.getElementById('key-claude').value.trim()};
+      S.msg = ls.set('comity.keys', S.keys) ? 'Keys saved on this phone.' : "Couldn't save. This browser is blocking storage.";
+      return render();
+    case 'addNameBtn': { const v = document.getElementById('newName').value.trim(); if(v && !S.names.includes(v)){ S.names.push(v); ls.set('comity.names', S.names); } return render(); }
+    case 'wipeBtn': S.confirm = 'wipe'; return render();
+    case 'wipeNo': S.confirm = null; return render();
+    case 'wipeYes': S.history = []; saveHistory(); S.msg = 'All conversations deleted.'; S.confirm = null; return render();
+  }
+});
+
+/* ---------- recording ---------- */
+let wakeLock = null, tick = null;
+async function keepAwake(){ try{ if('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); }catch(e){} }
+document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible' && S.view === 'listening') keepAwake(); });
+
+async function startListening(){
+  if(!S.keys.aai || !S.keys.claude){ S.msg = 'Add your AssemblyAI and Claude keys first, then come back and press Start.'; return go('settings'); }
+  let stream;
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({audio:{channelCount:1, echoCancellation:true, noiseSuppression:true}});
+  }catch(e){
+    S.msg = 'Comity needs the microphone. Allow microphone access for this site in Chrome, then try again. (The preview inside Claude can’t use the microphone; the installed web app can.)';
+    return go('home');
+  }
+  const type = ['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || '';
+  const mr = new MediaRecorder(stream, type ? {mimeType:type, audioBitsPerSecond:32000} : undefined);
+  const chunks = [];
+  mr.ondataavailable = ev => { if(ev.data && ev.data.size) chunks.push(ev.data); };
+  S.rec = {mr, stream, chunks, type: mr.mimeType || type || 'audio/webm', paused:false, startedAt: Date.now(), pausedTotal:0, pausedAt:0,
+    elapsed(){ return (this.paused ? this.pausedAt : Date.now()) - this.startedAt - this.pausedTotal; }};
+  mr.start(5000);
+  keepAwake();
+  go('listening');
+  tick = setInterval(() => { const el = document.getElementById('clock'); if(el) el.textContent = mmss(S.rec.elapsed()); }, 500);
+}
+function togglePause(){
+  const r = S.rec;
+  if(r.paused){ r.pausedTotal += Date.now() - r.pausedAt; r.paused = false; r.mr.resume(); }
+  else { r.pausedAt = Date.now(); r.paused = true; r.mr.pause(); }
+  render();
+}
+function stopListening(){
+  const r = S.rec; clearInterval(tick);
+  r.durationMs = r.elapsed();
+  r.mr.onstop = () => {
+    r.stream.getTracks().forEach(t => t.stop());
+    try{ wakeLock && wakeLock.release(); }catch(e){}
+    S.proc = {blob: new Blob(r.chunks, {type: r.type}), durationMs: r.durationMs, step:0, error:'', conv:null};
+    S.rec = null;
+    runPipeline();
+  };
+  r.mr.stop();
+}
+
+/* ---------- AssemblyAI + Claude ---------- */
+const AAI = 'https://api.assemblyai.com/v2';
+async function runPipeline(){
+  const p = S.proc; p.error = ''; go('processing'); keepAwake();
+  try{
+    if(!p.conv){
+      p.step = 0; render();
+      const up = await fetch(AAI + '/upload', {method:'POST', headers:{authorization:S.keys.aai}, body:p.blob});
+      if(!up.ok) throw new Error(up.status === 401 ? 'AssemblyAI rejected the key. Check it in Settings.' : 'Upload failed (' + up.status + '). Check your connection.');
+      const {upload_url} = await up.json();
+      p.step = 1; render();
+      const mk = await fetch(AAI + '/transcript', {method:'POST', headers:{authorization:S.keys.aai, 'content-type':'application/json'}, body: JSON.stringify({audio_url:upload_url, speaker_labels:true})});
+      if(!mk.ok) throw new Error('AssemblyAI could not start the transcript (' + mk.status + ').');
+      let tr = await mk.json();
+      while(tr.status !== 'completed'){
+        if(tr.status === 'error') throw new Error('AssemblyAI could not read the audio: ' + (tr.error || 'unknown error'));
+        await new Promise(r => setTimeout(r, 3000));
+        const g = await fetch(AAI + '/transcript/' + tr.id, {headers:{authorization:S.keys.aai}});
+        if(!g.ok) throw new Error('Lost touch with AssemblyAI (' + g.status + '). Try again.');
+        tr = await g.json();
+      }
+      p.step = 2; render();
+      try{ await fetch(AAI + '/transcript/' + tr.id, {method:'DELETE', headers:{authorization:S.keys.aai}}); }catch(e){}
+      const utt = tr.utterances || [];
+      if(!utt.length) throw new Error("Comity didn't hear any conversation in that recording. Try placing the phone closer.");
+      p.conv = {id: 'c' + Date.now(), created: Date.now(), durationMs: p.durationMs, names:{},
+        turns: utt.map(u => ({sp:u.speaker, start:u.start, end:u.end, text:u.text, rel:null, intr:false}))};
+      p.blob = null;
+      upsert(p.conv);
+    }
+    p.step = 3; render();
+    await analyze(p.conv);
+    upsert(p.conv);
+    p.step = 4;
+    go('naming', {conv: p.conv});
+  }catch(e){
+    p.error = e.message || 'Something went wrong. Try again.';
+    if(p.step === 3) p.error += ' Your transcript is saved, so trying again only redoes the analysis.';
+    render();
+  }
+}
+async function rerunAnalysis(b){
+  b.disabled = true; b.textContent = 'Analyzing…'; S.msg = '';
+  try{ if(!S.keys.claude) throw new Error('Add your Claude key in Settings first.'); await analyze(S.conv); upsert(S.conv); }
+  catch(e){ S.msg = e.message; }
+  render();
+}
+
+const SYSTEM = `You analyze transcripts for Comity, a coaching app that shows people how well they listen in conversation.
+Speakers are labeled with letters. For EVERY turn, return two fields:
+"r" = how the turn relates to the conversation, exactly one of:
+- "opening": the first turn.
+- "backchannel": a short listening cue with no new content ("mm-hm", "yeah", "really?", laughter, "huh").
+- "continue": the same person continuing their own point right after a listening cue from someone else.
+- "question_about": asks about what the previous speaker said.
+- "follow_up": a substantive reply that connects to and builds on what was just said.
+- "shift": stays loosely on topic but turns the focus to the speaker's own experience without engaging the other person's point.
+- "new_topic_after_finished": changes the subject after the previous point had clearly wrapped up.
+- "topic_jump": changes the subject while the previous point was unfinished or unacknowledged.
+"x" = true only if this speaker started while the previous speaker was clearly mid-sentence or mid-story AND the previous speaker stopped because of it. Never true for listening cues, finishing a sentence together, or starting after a natural pause. Overlap timing is given; a speech-recognition transcript may cut words, so judge from content too.
+Also write "people": one or two plain sentences per speaker letter describing their listening pattern, based only on what the transcript shows. And "overall": two or three plain sentences on the conversation's pattern. No advice, no praise, no judgment words like "rude"; describe what happened.
+Reply with ONLY this JSON, no other text:
+{"turns":[{"i":0,"r":"opening","x":false}],"people":{"A":"..."},"overall":"..."}`;
+
+async function analyze(conv){
+  const T = conv.turns;
+  const lines = T.map((t, i) => {
+    const prev = T[i-1]; const ov = prev && prev.sp !== t.sp && prev.end > t.start ? ` (starts while ${prev.sp} is still talking, overlap ${((prev.end - t.start)/1000).toFixed(1)}s)` : '';
+    return `#${i} [${t.sp}] ${mmss(t.start)}-${mmss(t.end)}${ov}: ${t.text}`;
+  }).join('\n');
+  const res = await fetch('https://api.anthropic.com/v1/messages', {method:'POST',
+    headers:{'x-api-key':S.keys.claude, 'anthropic-version':'2023-06-01', 'content-type':'application/json', 'anthropic-dangerous-direct-browser-access':'true'},
+    body: JSON.stringify({model:'claude-opus-5-5', max_tokens:16000, system:SYSTEM,
+      messages:[{role:'user', content:`Speakers: ${speakersOf(conv).join(', ')}. ${T.length} turns.\n\n${lines}`}]})});
+  if(!res.ok){
+    let m = ''; try{ m = (await res.json()).error.message; }catch(e){}
+    throw new Error(res.status === 401 ? 'Claude rejected the key. Check it in Settings.' : 'The analysis failed (' + res.status + ')' + (m ? ': ' + m : '.'));
+  }
+  const data = await res.json();
+  const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+  let out;
+  try{ out = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1)); }
+  catch(e){ throw new Error("The analysis came back in a form Comity couldn't read."); }
+  const valid = ['opening','backchannel','continue','question_about','follow_up','shift','new_topic_after_finished','topic_jump'];
+  (out.turns || []).forEach(o => { const t = T[o.i]; if(t){ t.rel = valid.includes(o.r) ? o.r : null; t.intr = !!o.x; } });
+  conv.ai = {people: out.people || {}, overall: out.overall || ''};
+}
+
+render();
+</script>
+
+</body>
+</html>
