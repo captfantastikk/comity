@@ -152,7 +152,7 @@ const S = {
   look: ls.get('comity.look', 'dark'),
   mode: ls.get('comity.mode', 'opus'),
   pending: ls.get('comity.pending', null),
-  rec:null, proc:null
+  rec:null, proc:null, update:null
 };
 function saveHistory(){ if(!ls.set('comity.history', S.history)) S.msg = 'Your phone storage for Comity is full. Delete an old conversation to save new ones.'; }
 function upsert(conv){ const i = S.history.findIndex(c => c.id === conv.id); if(i >= 0) S.history[i] = conv; else S.history.unshift(conv); saveHistory(); }
@@ -323,6 +323,7 @@ const views = {
     const need = missingKeys();
     return `${header()}
     ${S.msg ? `<div class="card"><p class="err">${esc(S.msg)}</p></div>` : ''}
+    ${S.update && S.view === 'home' ? `<div class="card"><h3>A new version of Comity is ready</h3><p class="muted small">Build ${S.update.build}. Tap Get it, then open the download and tap Update. Your keys and conversations stay.</p><div class="row"><button class="btn primary" id="getUpdate">Get it</button><button class="btn" id="laterUpdate">Later</button></div></div>` : ''}
     ${S.pending ? `<div class="card">
       <h3>Your last conversation isn't finished</h3>
       <p class="muted small">It was saved before Comity could finish reading it.</p>
@@ -477,7 +478,12 @@ const views = {
       <p class="pron">Comity, not comedy.</p>
       <p class="muted small">Said KOM-ih-tee. Mutual courtesy and respect between people: giving each other room to talk, and real attention while they do.</p>
       <button class="btn" id="introBtn">Show the intro again</button>
-    </div>`;
+    </div>
+    ${NATIVE ? `<div class="card">
+      <h3>Updates</h3>
+      <p class="muted small">You have build ${appBuild()}.${S.update ? ' Build ' + S.update.build + ' is ready.' : ''}</p>
+      ${S.update ? `<button class="btn primary" id="getUpdate">Get build ${S.update.build}</button>` : `<button class="btn" id="checkUpdate" ${S.checking ? 'disabled' : ''}>${S.checking ? 'Checking…' : 'Check for updates'}</button>`}
+    </div>` : ''}`;
   }
 };
 
@@ -511,6 +517,9 @@ app.addEventListener('click', e => {
     case 'wBack': S.wstep--; return render();
     case 'wDone': return finishWelcome('settings');
     case 'wSample': return finishWelcome('results', {conv: SAMPLE});
+    case 'checkUpdate': return checkUpdate(true);
+    case 'getUpdate': NATIVE.openLink(APK_URL); return;
+    case 'laterUpdate': S.update = null; return render();
     case 'introBtn': S.wstep = 0; return go('welcome');
     case 'startBtn': return startListening();
     case 'pauseBtn': return togglePause();
@@ -745,6 +754,22 @@ async function analyze(conv, mode){
   conv.ai = {people: out.people || {}, overall: out.overall || ''};
 }
 
+/* ---------- updates (Android test builds) ---------- */
+const APK_URL = 'https://github.com/captfantastikk/comity/releases/download/test-build/comity.apk';
+const appBuild = () => { try{ return NATIVE ? Number(NATIVE.appVersion()) : 0; }catch(e){ return 0; } };
+async function checkUpdate(manual){
+  if(!NATIVE) return;
+  if(manual){ S.checking = true; S.msg = ''; render(); }
+  const r = await net('GET', 'https://api.github.com/repos/captfantastikk/comity/releases/tags/test-build', {accept:'application/vnd.github+json', 'user-agent':'Comity-app'});
+  S.checking = false;
+  const m = /build (\d+)/.exec(parse(r.text).name || '');
+  const latest = m ? Number(m[1]) : 0, mine = appBuild();
+  if(r.status !== 200 || !latest){ if(manual){ S.msg = r.status === 0 ? 'No internet connection. Try again in a moment.' : "Couldn't check for updates right now. Try again later."; render(); } return; }
+  S.update = latest > mine ? {build: latest} : null;
+  if(manual && !S.update) S.msg = 'You have the latest version (build ' + mine + ').';
+  if(manual || S.update) render();
+}
+
 /* ---------- start ---------- */
 if(NATIVE){
   const st = nativeState();
@@ -756,6 +781,7 @@ if(NATIVE){
   }
 }
 render();
+checkUpdate(false);
 </script>
 
 </body>
