@@ -1,0 +1,73 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Google Play upload key (repository secrets). Until it is set, the app is signed with the
+// test key in android/test-key, which is only for installing test builds on your own phone.
+def keystoreFile = System.getenv("UPLOAD_KEYSTORE_PATH")
+
+// The app's screens are the same index.html as the web version at the top of this repository.
+def webAssets = layout.buildDirectory.dir('generated/webassets')
+
+android {
+    namespace 'com.knutsolabs.comity'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'com.knutsolabs.comity'
+        minSdk 26
+        targetSdk 36
+        versionCode Integer.parseInt(System.getenv("VERSION_CODE") ?: "1")
+        versionName "1.0." + (System.getenv("VERSION_CODE") ?: "1")
+    }
+
+    signingConfigs {
+        upload {
+            if (keystoreFile) {
+                storeFile file(keystoreFile)
+                storePassword System.getenv("UPLOAD_STORE_PASSWORD")
+                keyAlias System.getenv("UPLOAD_KEY_ALIAS")
+                keyPassword System.getenv("UPLOAD_KEY_PASSWORD")
+            }
+        }
+        test {
+            storeFile rootProject.file('test-key/comity-test.jks')
+            storePassword 'comity-test'
+            keyAlias 'comity-test'
+            keyPassword 'comity-test'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig keystoreFile ? signingConfigs.upload : signingConfigs.test
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    sourceSets {
+        main {
+            assets.srcDir(webAssets)
+        }
+    }
+
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+}
+
+def copyWebApp = tasks.register('copyWebApp', Copy) {
+    from(rootProject.file('../index.html'))
+    into(webAssets)
+}
+tasks.named('preBuild') { dependsOn copyWebApp }
+
+dependencies {
+    implementation 'androidx.core:core:1.16.0'
+}

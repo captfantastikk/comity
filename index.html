@@ -13,13 +13,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&display=swap">
 <style>
+/* Fonts bundled inside the Android app; the web version falls back to Google Fonts */
+@font-face{font-family:"Comity Display";src:url("fonts/BricolageGrotesque.ttf") format("truetype");font-weight:200 800;font-display:swap}
+@font-face{font-family:"Comity Body";src:url("fonts/AtkinsonHyperlegible-Regular.ttf") format("truetype");font-weight:400;font-display:swap}
+@font-face{font-family:"Comity Body";src:url("fonts/AtkinsonHyperlegible-Bold.ttf") format("truetype");font-weight:700;font-display:swap}
 /* Layout: one phone-width column; dark by default, light only when chosen in Settings */
 :root{
   --bg:#12171B; --surface:#1A2126; --surface2:#232C32; --line:#2E3940; --fg:#E7EDEF; --muted:#93A2A9;
   --green:#36C47F; --green-ink:#0B2A1A; --blue:#5B9CF2; --danger:#FF8A7A; --night:#07090A;
   --s0:#36C47F; --s1:#5B9CF2; --s2:#F2B544; --s3:#FF7A6B; --s4:#B48CF2; --s5:#4CC9F0;
-  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
-  --body:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display:"Comity Display", "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Comity Body", "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
   color-scheme:dark;
 }
 :root[data-look="light"]{
@@ -106,6 +110,19 @@ input[type=text],input[type=password]{width:100%;min-height:46px;border-radius:1
 @media (prefers-reduced-motion:reduce){.step.on i{animation:none;border-top-color:var(--blue)}}
 .err{color:var(--danger)}
 .confirm{background:color-mix(in srgb,var(--danger) 12%,var(--surface));border:1px solid color-mix(in srgb,var(--danger) 40%,var(--line))}
+.welcome{display:flex;flex-direction:column;gap:18px;padding-top:12px}
+.welcome .art{display:grid;place-items:center;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px}
+.welcome .art svg{width:100%;max-width:260px;height:auto}
+.dots{display:flex;gap:8px;justify-content:center}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--fg)}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--surface2)}
+.opt[aria-pressed="true"]{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue)}
+.opt .radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--muted);flex:none;margin-top:2px;display:grid;place-items:center}
+.opt[aria-pressed="true"] .radio{border-color:var(--blue)}
+.opt[aria-pressed="true"] .radio::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--blue)}
+.opt b{display:block}
+.pron{font-family:var(--display);font-size:1.4rem;font-weight:700}
 </style>
 
 </head>
@@ -113,7 +130,8 @@ input[type=text],input[type=password]{width:100%;min-height:46px;border-radius:1
 <div id="app"></div>
 
 <script>
-const ICON = `<svg viewBox="0 0 140 140" aria-hidden="true"><rect x="2" y="2" width="136" height="136" rx="26" fill="#1A2126" stroke="#56646E" stroke-width="4"/><path d="M56 110 L18 130 L28 102 C16 92 10 78 10 60 C10 32 32 10 58 10 L82 10 C108 10 130 32 130 60 C130 88 108 110 82 110 Z" fill="#F2F4F5"/><text x="70" y="69" text-anchor="middle" font-family="Bricolage Grotesque, Segoe UI, sans-serif" font-weight="700" font-size="30" fill="#1A2126">comity</text></svg>`;
+const NATIVE = window.ComityNative || null;
+const ICON = `<svg viewBox="0 0 140 140" aria-hidden="true"><rect x="2" y="2" width="136" height="136" rx="26" fill="#1A2126" stroke="#56646E" stroke-width="4"/><path d="M56 110 L18 130 L28 102 C16 92 10 78 10 60 C10 32 32 10 58 10 L82 10 C108 10 130 32 130 60 C130 88 108 110 82 110 Z" fill="#F2F4F5"/><text x="70" y="69" text-anchor="middle" font-family="Comity Display, Bricolage Grotesque, Segoe UI, sans-serif" font-weight="700" font-size="30" fill="#1A2126">comity</text></svg>`;
 const I = {
   mic:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4M8 21h8"/></svg>`,
   gear:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>`,
@@ -123,29 +141,54 @@ const I = {
 /* ---------- storage ---------- */
 const ls = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
-  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
+  set(k, v){ try{ if(v === null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); return true; }catch(e){ return false; } }
 };
 const S = {
-  view:'home', conv:null, msg:'', confirm:null,
+  view: ls.get('comity.welcomed', false) ? 'home' : 'welcome', wstep:0,
+  conv:null, msg:'', confirm:null, starting:false,
   history: ls.get('comity.history', []),
   names: ls.get('comity.names', []),
   keys: ls.get('comity.keys', {aai:'', claude:''}),
   look: ls.get('comity.look', 'dark'),
+  mode: ls.get('comity.mode', 'opus'),
+  pending: ls.get('comity.pending', null),
   rec:null, proc:null
 };
 function saveHistory(){ if(!ls.set('comity.history', S.history)) S.msg = 'Your phone storage for Comity is full. Delete an old conversation to save new ones.'; }
 function upsert(conv){ const i = S.history.findIndex(c => c.id === conv.id); if(i >= 0) S.history[i] = conv; else S.history.unshift(conv); saveHistory(); }
-document.documentElement.dataset.look = S.look;
+function saveJob(job){ S.pending = job; ls.set('comity.pending', job); }
+function clearJob(){ if(S.pending && S.pending.path && NATIVE) NATIVE.deleteFile(S.pending.path); S.pending = null; ls.set('comity.pending', null); }
+function applyLook(){ document.documentElement.dataset.look = S.look; if(NATIVE) NATIVE.setLook(S.look === 'light'); }
+applyLook();
+/* A web job whose audio was lost on reload can't be finished */
+if(S.pending && !S.pending.path && !S.pending.uploadUrl && !S.pending.transcriptId && !S.pending.conv) clearJob();
 
 /* ---------- helpers ---------- */
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const mmss = ms => { const s = Math.max(0, Math.round(ms/1000)); const h = Math.floor(s/3600), m = Math.floor(s%3600/60), x = s%60; return (h ? h+':'+String(m).padStart(2,'0') : m) + ':' + String(x).padStart(2,'0'); };
 const mins = ms => { const s = Math.round(ms/1000); return s < 60 ? s+' sec' : (s/60).toFixed(s < 600 ? 1 : 0)+' min'; };
 const pct = x => Math.round(x*100)+'%';
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 const dateStr = t => new Date(t).toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'}) + ' · ' + new Date(t).toLocaleTimeString(undefined, {hour:'numeric', minute:'2-digit'});
 const speakersOf = conv => { const seen = []; conv.turns.forEach(t => { if(!seen.includes(t.sp)) seen.push(t.sp); }); return seen; };
 const colorOf = (conv, sp) => `var(--s${speakersOf(conv).indexOf(sp) % 6})`;
 const nameOf = (conv, sp) => (conv.names && conv.names[sp]) || 'Speaker ' + sp;
+function parse(text){ try{ return JSON.parse(text); }catch(e){ return {}; } }
+
+/* ---------- network: the Android app sends requests itself; the web uses fetch ---------- */
+let netSeq = 0; const netWait = {};
+window.__nativeHttpDone = (id, status, text) => { const r = netWait[id]; if(r){ delete netWait[id]; r({status, text}); } };
+function net(method, url, headers, body, filePath){
+  if(NATIVE) return new Promise(res => { const id = 'h' + (++netSeq); netWait[id] = res; NATIVE.http(id, method, url, JSON.stringify(headers || {}), body || '', filePath || ''); });
+  return fetch(url, {method, headers, body: body || undefined}).then(async r => ({status:r.status, text: await r.text()}), e => ({status:0, text:String(e && e.message || e)}));
+}
+function apiError(service, r){
+  if(r.status === 0) return 'No internet connection. Check your signal, then tap Try again.';
+  if(r.status === 401 || r.status === 403) return service + ' rejected the key. Check it in Settings.';
+  const d = parse(r.text); const m = (d.error && (d.error.message || (typeof d.error === 'string' ? d.error : ''))) || d.message || '';
+  if(r.status === 402 || /credit|balance|billing|payment/i.test(m)) return service + ' says the account is out of credit. ' + (m ? '(' + m + ')' : '');
+  return service + ' returned an error (' + r.status + ')' + (m ? ': ' + m : '.');
+}
 
 /* ---------- metrics ---------- */
 const RESPONSE = ['follow_up','question_about','shift','topic_jump'];
@@ -159,7 +202,7 @@ function stats(conv){
     p.talk += d;
     if(t.rel !== 'backchannel'){ p.turns++; p.longest = Math.max(p.longest, d); }
     if(t.rel === 'backchannel') p.cues++;
-    if(t.rel === 'question_about'){ p.questions++; }
+    if(t.rel === 'question_about') p.questions++;
     if(t.rel === 'shift') p.shifts++;
     if(t.rel === 'topic_jump') p.jumps++;
     if(RESPONSE.includes(t.rel)){ p.eligible++; if(t.rel === 'follow_up' || t.rel === 'question_about') p.support++; }
@@ -218,6 +261,19 @@ const SAMPLE = (() => {
   };
 })();
 
+/* ---------- first-run guide ---------- */
+const WELCOME = [
+  {title:'Set it down, start listening',
+   text: NATIVE ? 'Put your phone face-up in the middle of the table and tap the microphone. You can lock the phone. Comity keeps listening.' : 'Put your phone face-up in the middle of the table and tap the microphone. Keep Comity open on the screen while it listens.',
+   art:`<svg viewBox="0 0 260 150" aria-hidden="true"><ellipse cx="130" cy="118" rx="118" ry="24" fill="var(--surface2)"/><rect x="92" y="34" width="76" height="92" rx="12" fill="#1A2126" stroke="#56646E" stroke-width="3" transform="skewX(-12) translate(24 0)"/><circle cx="137" cy="80" r="20" fill="#1A2126" stroke="#56646E" stroke-width="3"/><g transform="translate(127 66)" fill="none" stroke="#F2F4F5" stroke-width="2.4" stroke-linecap="round"><rect x="6" y="2" width="8" height="14" rx="4"/><path d="M2 12a8 8 0 0 0 16 0M10 20v4"/></g><path d="M196 52q14 14 0 28M210 42q24 24 0 48" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"/><path d="M64 52q-14 14 0 28M50 42q-24 24 0 48" fill="none" stroke="var(--muted)" stroke-width="3" stroke-linecap="round"/></svg>`},
+  {title:'Tell everyone it’s on',
+   text:'Let everyone at the table know Comity is listening before you start. In Florida, everyone in a private conversation has to agree to it. Comity keeps the words, never the audio.',
+   art:`<svg viewBox="0 0 260 150" aria-hidden="true"><path d="M30 30h90a16 16 0 0 1 16 16v28a16 16 0 0 1-16 16H62l-20 16 4-16H30a16 16 0 0 1-16-16V46a16 16 0 0 1 16-16z" fill="var(--s0)"/><path d="M140 52h90a16 16 0 0 1 16 16v28a16 16 0 0 1-16 16h-16l4 16-20-16h-58a16 16 0 0 1-16-16V68a16 16 0 0 1 16-16z" fill="var(--s1)"/><path d="M52 60l12 12 24-24" fill="none" stroke="#0B2A1A" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M168 82l12 12 24-24" fill="none" stroke="#0B1A33" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg>`},
+  {title:'Add your keys once',
+   text:'Comity uses AssemblyAI to tell voices apart and Claude to read how everyone listened. Paste your keys in Settings. They stay on this phone.',
+   art:`<svg viewBox="0 0 260 150" aria-hidden="true"><circle cx="90" cy="75" r="34" fill="none" stroke="var(--s2)" stroke-width="12"/><path d="M122 75h100M196 75v24M214 75v18" fill="none" stroke="var(--s2)" stroke-width="12" stroke-linecap="round"/></svg>`}
+];
+
 /* ---------- render ---------- */
 const app = document.getElementById('app');
 function go(view, extra){ S.view = view; S.confirm = null; if(extra) Object.assign(S, extra); render(); window.scrollTo(0, 0); }
@@ -237,17 +293,47 @@ function convItem(conv){
     <div class="legend">${st.people.map(p => `<span><i class="dot" style="background:${colorOf(conv,p.sp)}"></i>${esc(nameOf(conv,p.sp))} ${pct(p.share)}</span>`).join('')}</div>
   </button>`;
 }
+function missingKeys(){
+  if(!S.keys.aai) return 'Add your AssemblyAI key first, then come back and tap the microphone.';
+  if(S.mode === 'opus' && !S.keys.claude) return 'Add your Claude key, or pick a different listening analysis option below.';
+  return '';
+}
+const MODES = [
+  {id:'opus', name:'Sharpest', desc:'Claude Opus reads the conversation. Uses your Claude key and credit.'},
+  {id:'gateway', name:'Cheaper', desc:'Claude Sonnet through AssemblyAI. Uses only your AssemblyAI key and credits.'},
+  {id:'off', name:'Off', desc:'Talk time, turns and timeline only. No AI cost. You can still run the analysis on one conversation later.'}
+];
 
 const views = {
+  welcome(){
+    const w = WELCOME[S.wstep], last = S.wstep === WELCOME.length - 1;
+    return `<div class="welcome">
+      <div class="top"><div class="brand">${ICON}<span>comity</span></div><button class="chip" id="skipWelcome">Skip, I know this</button></div>
+      <div class="art">${w.art}</div>
+      <span class="label">Step ${S.wstep + 1} of ${WELCOME.length}</span>
+      <h1>${esc(w.title)}</h1>
+      <p class="muted">${esc(w.text)}</p>
+      <div class="dots" aria-hidden="true">${WELCOME.map((_, i) => `<i class="${i === S.wstep ? 'on' : ''}"></i>`).join('')}</div>
+      <div class="row">${S.wstep ? `<button class="btn" id="wBack">Back</button>` : ''}<button class="btn primary" style="flex:1" id="${last ? 'wDone' : 'wNext'}">${last ? 'Add my keys' : 'Next'}</button></div>
+      ${last ? `<button class="btn block" id="wSample">Show me the sample first</button>` : ''}
+    </div>`;
+  },
+
   home(){
-    const ready = S.keys.aai && S.keys.claude;
+    const need = missingKeys();
     return `${header()}
     ${S.msg ? `<div class="card"><p class="err">${esc(S.msg)}</p></div>` : ''}
+    ${S.pending ? `<div class="card">
+      <h3>Your last conversation isn't finished</h3>
+      <p class="muted small">It was saved before Comity could finish reading it.</p>
+      <div class="row"><button class="btn primary" id="finishBtn">Finish it</button><button class="btn danger" id="discardBtn">Discard</button></div>
+      ${S.confirm === 'discard' ? `<div class="card confirm"><p>Discard this conversation? It can't be recovered.</p><div class="row"><button class="btn danger" id="discardYes">Discard</button><button class="btn" id="discardNo">Keep it</button></div></div>` : ''}
+    </div>` : ''}
     <div class="start">
-      <button class="mic" id="startBtn" aria-label="Start listening">${I.mic}</button>
-      <h1>Start listening</h1>
-      <p class="muted small">Set the phone face-up in the middle of the table.<br>Audio is deleted as soon as it's analyzed.</p>
-      ${ready ? '' : `<p class="small"><button class="chip" data-go="settings">Add your keys in Settings</button> to record a real conversation.</p>`}
+      <button class="mic" id="startBtn" aria-label="Start listening" ${S.starting ? 'disabled' : ''}>${I.mic}</button>
+      <h1>${S.starting ? 'Starting…' : 'Start listening'}</h1>
+      <p class="muted small">Set the phone face-up in the middle of the table.<br>Audio is deleted as soon as it's read.</p>
+      ${need ? `<p class="small"><button class="chip" data-go="settings">Add your keys in Settings</button> to record a real conversation.</p>` : ''}
     </div>
     <div class="list">
       <span class="label">Try it</span>
@@ -260,27 +346,28 @@ const views = {
   },
 
   listening(){
-    const r = S.rec;
+    const r = S.rec, paused = r.paused;
     return `<div class="listen">
-      <div class="pulse ${r.paused ? 'paused' : ''}"></div>
+      <div class="pulse ${paused ? 'paused' : ''}"></div>
       <div class="time" id="clock">${mmss(r.elapsed())}</div>
-      <p>${r.paused ? 'Paused' : 'Listening'}</p>
-      <p class="small" style="opacity:.7;max-width:30ch">Keep this screen open. Comity keeps the screen awake while it listens.</p>
+      <p>${paused ? 'Paused' : 'Listening'}</p>
+      <p class="small" style="opacity:.7;max-width:30ch">${NATIVE ? 'You can lock your phone. Comity keeps listening until you tap Stop.' : 'Keep this screen open. Comity keeps the screen awake while it listens.'}</p>
       <div class="row" style="justify-content:center">
-        <button class="btn" id="pauseBtn">${r.paused ? 'Resume' : 'Pause'}</button>
+        <button class="btn" id="pauseBtn">${paused ? 'Resume' : 'Pause'}</button>
         <button class="btn stop" id="stopBtn">Stop</button>
       </div>
     </div>`;
   },
 
   processing(){
-    const p = S.proc, names = ['Uploading audio','Telling voices apart and writing the transcript','Deleting the audio','Reading how everyone listened'];
+    const p = S.proc, aiOn = S.mode !== 'off';
+    const names = ['Uploading audio','Telling voices apart and writing the transcript','Deleting the audio'].concat(aiOn ? ['Reading how everyone listened'] : []);
     return `${header('Working on it')}
     <div class="card">
       <div class="steps">${names.map((n, i) => `<div class="step ${i < p.step ? 'done' : i === p.step && !p.error ? 'on' : ''}"><i></i><span>${n}</span></div>`).join('')}</div>
-      <p class="muted small">A 30-minute conversation usually takes a few minutes. Keep this screen open.</p>
+      <p class="muted small">A 30-minute conversation usually takes a few minutes.${NATIVE ? ' If you leave, the conversation is kept and you can finish it from the home screen.' : ' Keep this screen open.'}</p>
       ${p.error ? `<p class="err">${esc(p.error)}</p>
-        <div class="row"><button class="btn primary" id="retryBtn">Try again</button>${p.step >= 3 && p.conv ? `<button class="btn" id="skipAiBtn">Skip analysis for now</button>` : ''}<button class="btn" data-go="home">Cancel</button></div>` : ''}
+        <div class="row">${p.fatal ? '' : `<button class="btn primary" id="retryBtn">Try again</button>`}${p.step >= 3 && S.pending && S.pending.conv ? `<button class="btn" id="skipAiBtn">Skip analysis for now</button>` : ''}<button class="btn" id="procHome">Back to home</button></div>` : ''}
     </div>`;
   },
 
@@ -312,13 +399,13 @@ const views = {
       <span class="label" style="margin-top:6px">When each person talked</span>
       <div class="timeline" role="img" aria-label="Conversation timeline">${c.turns.map(t => {
         const lane = speakersOf(c).indexOf(t.sp), n = speakersOf(c).length;
-        const top = n > 1 ? 4 + lane * (26 / (n)) : 12;
+        const top = n > 1 ? 4 + lane * (26 / n) : 12;
         return `<span style="left:${t.start/st.dur*100}%;width:${Math.max(.4,(t.end-t.start)/st.dur*100)}%;top:${top}px;height:${Math.max(4, 26/n - 2)}px;background:${colorOf(c,t.sp)}"></span>`;}).join('')}</div>
       <div class="axis">${ticks}</div>
-      <div class="row small muted"><span>${mmss(st.dur)} total</span><span>·</span><span>${st.interruptions} interruption${st.interruptions === 1 ? '' : 's'}</span></div>
+      <div class="row small muted"><span>${mmss(st.dur)} total</span>${st.labeled ? `<span>·</span><span>${st.interruptions} interruption${st.interruptions === 1 ? '' : 's'}</span>` : ''}</div>
     </div>
     ${c.ai && c.ai.overall ? `<div class="card"><span class="label">Conversation pattern</span><p class="note">${esc(c.ai.overall)}</p></div>` :
-      `<div class="card"><p>The listening analysis hasn't run yet. Talk time is ready; interruptions and follow-ups need the analysis.</p>
+      `<div class="card"><p>${S.mode === 'off' ? 'Listening analysis is off in Settings.' : "The listening analysis hasn't run yet."} Talk time is ready. Interruptions and follow-ups need the analysis.</p>
        <button class="btn primary" id="rerunBtn">Run the analysis</button>${S.msg ? `<p class="err small">${esc(S.msg)}</p>` : ''}</div>`}
     ${st.people.map(p => `<div class="card">
       <div class="person-head"><span class="swatch" style="background:${colorOf(c,p.sp)}"></span><h3 style="flex:1">${esc(nameOf(c,p.sp))}</h3></div>
@@ -365,9 +452,14 @@ const views = {
       <p class="muted small">Keys stay on this phone only. They're never put in the app's code.</p>
       <label for="key-aai">AssemblyAI key (voices and transcript)</label>
       <input type="password" id="key-aai" value="${esc(S.keys.aai)}" autocomplete="off" spellcheck="false">
-      <label for="key-claude">Claude API key (listening analysis)</label>
+      <label for="key-claude">Claude API key (only for the Sharpest analysis)</label>
       <input type="password" id="key-claude" value="${esc(S.keys.claude)}" autocomplete="off" spellcheck="false">
       <button class="btn primary" id="saveKeysBtn">Save keys</button>
+    </div>
+    <div class="card">
+      <h3>Listening analysis</h3>
+      <p class="muted small">How Comity reads interruptions, follow-ups and topic changes after each conversation.</p>
+      ${MODES.map(m => `<button class="opt" data-mode="${m.id}" aria-pressed="${S.mode === m.id}"><span class="radio"></span><span><b>${m.name}</b><span class="muted small">${m.desc}</span></span></button>`).join('')}
     </div>
     <div class="card">
       <h3>Saved names</h3>
@@ -379,29 +471,57 @@ const views = {
       <p class="muted small">${S.history.length} saved on this phone · about ${Math.ceil(JSON.stringify(S.history).length/1024)} KB</p>
       <button class="btn danger" id="wipeBtn">Delete all conversations</button>
       ${S.confirm === 'wipe' ? `<div class="card confirm"><p>Delete every saved conversation? This can't be undone.</p><div class="row"><button class="btn danger" id="wipeYes">Delete all</button><button class="btn" id="wipeNo">Keep them</button></div></div>` : ''}
+    </div>
+    <div class="card">
+      <h3>What does Comity mean?</h3>
+      <p class="pron">Comity, not comedy.</p>
+      <p class="muted small">Said KOM-ih-tee. Mutual courtesy and respect between people: giving each other room to talk, and real attention while they do.</p>
+      <button class="btn" id="introBtn">Show the intro again</button>
     </div>`;
   }
 };
 
 function render(){
   app.innerHTML = views[S.view]();
-  if(S.view !== 'settings' && S.view !== 'results') S.msg = '';
+  if(S.view !== 'settings' && S.view !== 'results' && S.view !== 'home') S.msg = '';
 }
 
+/* Android back button: returns true when Comity handled it */
+window.comityBack = () => {
+  const map = {transcript:'results', results:'home', settings:'home', naming:'home'};
+  if(S.view === 'welcome'){ if(S.wstep > 0){ S.wstep--; render(); return true; } return false; }
+  if(S.view === 'listening' || S.view === 'processing') return S.view === 'listening' ? false : (S.proc && S.proc.error ? (go('home'), true) : true);
+  if(map[S.view]){ S.msg = ''; go(map[S.view]); return true; }
+  return false;
+};
+
 /* ---------- events ---------- */
+function finishWelcome(view, extra){ ls.set('comity.welcomed', true); S.wstep = 0; go(view, extra); }
 app.addEventListener('click', e => {
   const b = e.target.closest('button'); if(!b) return;
   if(b.dataset.go){ S.msg = ''; return go(b.dataset.go); }
   if(b.dataset.open){ const c = b.dataset.open === 'sample' ? SAMPLE : S.history.find(x => x.id === b.dataset.open); if(c) go('results', {conv:c, msg:''}); return; }
   if(b.dataset.fill){ const el = document.getElementById('name-' + b.dataset.fill); if(el) el.value = b.dataset.name; return; }
-  if(b.dataset.look){ S.look = b.dataset.look; ls.set('comity.look', S.look); document.documentElement.dataset.look = S.look; return render(); }
+  if(b.dataset.look){ S.look = b.dataset.look; ls.set('comity.look', S.look); applyLook(); return render(); }
+  if(b.dataset.mode){ S.mode = b.dataset.mode; ls.set('comity.mode', S.mode); S.msg = ''; return render(); }
   if(b.dataset.delname){ S.names = S.names.filter(n => n !== b.dataset.delname); ls.set('comity.names', S.names); return render(); }
   switch(b.id){
+    case 'skipWelcome': return finishWelcome('home');
+    case 'wNext': S.wstep++; return render();
+    case 'wBack': S.wstep--; return render();
+    case 'wDone': return finishWelcome('settings');
+    case 'wSample': return finishWelcome('results', {conv: SAMPLE});
+    case 'introBtn': S.wstep = 0; return go('welcome');
     case 'startBtn': return startListening();
     case 'pauseBtn': return togglePause();
     case 'stopBtn': return stopListening();
+    case 'finishBtn': S.proc = {step:0, error:''}; return runPipeline();
+    case 'discardBtn': S.confirm = 'discard'; return render();
+    case 'discardNo': S.confirm = null; return render();
+    case 'discardYes': clearJob(); S.confirm = null; return render();
     case 'retryBtn': return runPipeline();
-    case 'skipAiBtn': { const c = S.proc.conv; upsert(c); return go('naming', {conv:c}); }
+    case 'procHome': S.msg = ''; return go('home');
+    case 'skipAiBtn': { const c = S.pending.conv; upsert(c); S.pending = null; ls.set('comity.pending', null); return go('naming', {conv:c}); }
     case 'saveNamesBtn': {
       const c = S.conv;
       speakersOf(c).forEach(sp => { const v = (document.getElementById('name-' + sp).value || '').trim(); if(v){ c.names[sp] = v; if(!S.names.includes(v)) S.names.push(v); } else delete c.names[sp]; });
@@ -414,7 +534,7 @@ app.addEventListener('click', e => {
     case 'rerunBtn': return rerunAnalysis(b);
     case 'saveKeysBtn':
       S.keys = {aai: document.getElementById('key-aai').value.trim(), claude: document.getElementById('key-claude').value.trim()};
-      S.msg = ls.set('comity.keys', S.keys) ? 'Keys saved on this phone.' : "Couldn't save. This browser is blocking storage.";
+      S.msg = ls.set('comity.keys', S.keys) ? 'Keys saved on this phone.' : "Couldn't save. Storage is blocked on this phone.";
       return render();
     case 'addNameBtn': { const v = document.getElementById('newName').value.trim(); if(v && !S.names.includes(v)){ S.names.push(v); ls.set('comity.names', S.names); } return render(); }
     case 'wipeBtn': S.confirm = 'wipe'; return render();
@@ -425,16 +545,42 @@ app.addEventListener('click', e => {
 
 /* ---------- recording ---------- */
 let wakeLock = null, tick = null;
-async function keepAwake(){ try{ if('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); }catch(e){} }
-document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'visible' && S.view === 'listening') keepAwake(); });
+async function keepAwake(on){
+  if(NATIVE){ NATIVE.keepAwake(!!on); return; }
+  try{
+    if(on && 'wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+    if(!on && wakeLock){ wakeLock.release(); wakeLock = null; }
+  }catch(e){}
+}
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState !== 'visible') return;
+  if(!NATIVE && (S.view === 'listening' || S.view === 'processing')) keepAwake(true);
+  if(S.view === 'listening') render();
+});
+function startTick(){ clearInterval(tick); tick = setInterval(() => { const el = document.getElementById('clock'); if(el && S.rec) el.textContent = mmss(S.rec.elapsed()); }, 500); }
+function nativeState(){ try{ return JSON.parse(NATIVE.recState()); }catch(e){ return {}; } }
+function nativeRec(){ return {native:true, get paused(){ return !!nativeState().paused; }, elapsed(){ return nativeState().elapsedMs || 0; }}; }
+
+window.onRecStarted = () => { S.starting = false; S.rec = nativeRec(); go('listening'); startTick(); };
+window.onRecError = code => {
+  S.starting = false;
+  S.msg = code === 'mic'
+    ? "Comity needs the microphone. Tap the microphone again and choose Allow. If the phone doesn't ask, turn it on in Settings, Apps, Comity, Permissions."
+    : "Comity couldn't start listening (" + code + "). Try again.";
+  go('home');
+};
 
 async function startListening(){
-  if(!S.keys.aai || !S.keys.claude){ S.msg = 'Add your AssemblyAI and Claude keys first, then come back and press Start.'; return go('settings'); }
+  const need = missingKeys();
+  if(need){ S.msg = need; return go('settings'); }
+  if(S.pending){ S.msg = 'Finish or discard your last conversation first.'; return go('home'); }
+  S.msg = '';
+  if(NATIVE){ S.starting = true; render(); NATIVE.startRecording(); return; }
   let stream;
   try{
     stream = await navigator.mediaDevices.getUserMedia({audio:{channelCount:1, echoCancellation:true, noiseSuppression:true}});
   }catch(e){
-    S.msg = 'Comity needs the microphone. Allow microphone access for this site in Chrome, then try again. (The preview inside Claude can’t use the microphone; the installed web app can.)';
+    S.msg = 'Comity needs the microphone. Allow microphone access for this site in Chrome, then try again.';
     return go('home');
   }
   const type = ['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t)) || '';
@@ -444,74 +590,110 @@ async function startListening(){
   S.rec = {mr, stream, chunks, type: mr.mimeType || type || 'audio/webm', paused:false, startedAt: Date.now(), pausedTotal:0, pausedAt:0,
     elapsed(){ return (this.paused ? this.pausedAt : Date.now()) - this.startedAt - this.pausedTotal; }};
   mr.start(5000);
-  keepAwake();
+  keepAwake(true);
   go('listening');
-  tick = setInterval(() => { const el = document.getElementById('clock'); if(el) el.textContent = mmss(S.rec.elapsed()); }, 500);
+  startTick();
 }
 function togglePause(){
   const r = S.rec;
+  if(r.native){ if(r.paused) NATIVE.resumeRecording(); else NATIVE.pauseRecording(); return render(); }
   if(r.paused){ r.pausedTotal += Date.now() - r.pausedAt; r.paused = false; r.mr.resume(); }
   else { r.pausedAt = Date.now(); r.paused = true; r.mr.pause(); }
   render();
 }
 function stopListening(){
   const r = S.rec; clearInterval(tick);
-  r.durationMs = r.elapsed();
+  if(r.native){
+    const res = parse(NATIVE.stopRecording());
+    S.rec = null;
+    if(!res.path){ S.msg = res.error ? "Comity couldn't save that recording (" + res.error + ")." : "Comity couldn't save that recording."; return go('home'); }
+    saveJob({path: res.path, durationMs: res.durationMs, created: Date.now()});
+    S.proc = {step:0, error:''};
+    return runPipeline();
+  }
+  const durationMs = r.elapsed();
   r.mr.onstop = () => {
     r.stream.getTracks().forEach(t => t.stop());
-    try{ wakeLock && wakeLock.release(); }catch(e){}
-    S.proc = {blob: new Blob(r.chunks, {type: r.type}), durationMs: r.durationMs, step:0, error:'', conv:null};
+    S.proc = {blob: new Blob(r.chunks, {type: r.type}), step:0, error:''};
     S.rec = null;
+    saveJob({durationMs, created: Date.now()});
     runPipeline();
   };
   r.mr.stop();
 }
 
-/* ---------- AssemblyAI + Claude ---------- */
+/* ---------- AssemblyAI + analysis (resumes where it left off) ---------- */
 const AAI = 'https://api.assemblyai.com/v2';
 async function runPipeline(){
-  const p = S.proc; p.error = ''; go('processing'); keepAwake();
+  const p = S.proc || (S.proc = {step:0, error:''});
+  p.error = ''; p.fatal = false;
+  go('processing'); keepAwake(true);
+  const job = S.pending;
   try{
-    if(!p.conv){
-      p.step = 0; render();
-      const up = await fetch(AAI + '/upload', {method:'POST', headers:{authorization:S.keys.aai}, body:p.blob});
-      if(!up.ok) throw new Error(up.status === 401 ? 'AssemblyAI rejected the key. Check it in Settings.' : 'Upload failed (' + up.status + '). Check your connection.');
-      const {upload_url} = await up.json();
+    if(!job) throw new Error('Nothing to finish.');
+    const auth = {authorization: S.keys.aai};
+    if(!job.conv){
+      if(!S.keys.aai) throw new Error('Add your AssemblyAI key in Settings first.');
+      if(!job.uploadUrl && !job.transcriptId){
+        p.step = 0; render();
+        let r;
+        if(NATIVE) r = await net('POST', AAI + '/upload', {...auth, 'content-type':'application/octet-stream'}, '', job.path);
+        else if(p.blob) r = await fetch(AAI + '/upload', {method:'POST', headers:auth, body:p.blob}).then(async x => ({status:x.status, text: await x.text()}), e => ({status:0, text:String(e)}));
+        else { p.fatal = true; throw new Error('The audio for this conversation was lost when the page closed.'); }
+        if(r.status !== 200) throw new Error(apiError('AssemblyAI', r));
+        job.uploadUrl = parse(r.text).upload_url;
+        if(!job.uploadUrl) throw new Error('AssemblyAI did not accept the audio. Try again.');
+        saveJob(job);
+      }
+      if(!job.transcriptId){
+        p.step = 1; render();
+        const r = await net('POST', AAI + '/transcript', {...auth, 'content-type':'application/json'}, JSON.stringify({audio_url: job.uploadUrl, speaker_labels: true}));
+        if(r.status !== 200) throw new Error(apiError('AssemblyAI', r));
+        job.transcriptId = parse(r.text).id;
+        saveJob(job);
+      }
       p.step = 1; render();
-      const mk = await fetch(AAI + '/transcript', {method:'POST', headers:{authorization:S.keys.aai, 'content-type':'application/json'}, body: JSON.stringify({audio_url:upload_url, speaker_labels:true})});
-      if(!mk.ok) throw new Error('AssemblyAI could not start the transcript (' + mk.status + ').');
-      let tr = await mk.json();
-      while(tr.status !== 'completed'){
-        if(tr.status === 'error') throw new Error('AssemblyAI could not read the audio: ' + (tr.error || 'unknown error'));
-        await new Promise(r => setTimeout(r, 3000));
-        const g = await fetch(AAI + '/transcript/' + tr.id, {headers:{authorization:S.keys.aai}});
-        if(!g.ok) throw new Error('Lost touch with AssemblyAI (' + g.status + '). Try again.');
-        tr = await g.json();
+      let tr;
+      for(;;){
+        const r = await net('GET', AAI + '/transcript/' + job.transcriptId, auth);
+        if(r.status !== 200) throw new Error(apiError('AssemblyAI', r));
+        tr = parse(r.text);
+        if(tr.status === 'completed') break;
+        if(tr.status === 'error'){ job.uploadUrl = null; job.transcriptId = null; saveJob(job); throw new Error('AssemblyAI could not read the audio: ' + (tr.error || 'unknown error')); }
+        await sleep(3000);
       }
       p.step = 2; render();
-      try{ await fetch(AAI + '/transcript/' + tr.id, {method:'DELETE', headers:{authorization:S.keys.aai}}); }catch(e){}
-      const utt = tr.utterances || [];
-      if(!utt.length) throw new Error("Comity didn't hear any conversation in that recording. Try placing the phone closer.");
-      p.conv = {id: 'c' + Date.now(), created: Date.now(), durationMs: p.durationMs, names:{},
-        turns: utt.map(u => ({sp:u.speaker, start:u.start, end:u.end, text:u.text, rel:null, intr:false}))};
+      net('DELETE', AAI + '/transcript/' + job.transcriptId, auth);
+      if(NATIVE && job.path){ NATIVE.deleteFile(job.path); job.path = null; }
       p.blob = null;
-      upsert(p.conv);
+      const utt = tr.utterances || [];
+      if(!utt.length){ clearJob(); p.fatal = true; throw new Error("Comity didn't hear any conversation in that recording. Try placing the phone closer."); }
+      job.conv = {id: 'c' + Date.now(), created: job.created || Date.now(), durationMs: job.durationMs, names:{},
+        turns: utt.map(u => ({sp:u.speaker, start:u.start, end:u.end, text:u.text, rel:null, intr:false}))};
+      upsert(job.conv);
+      saveJob(job);
     }
-    p.step = 3; render();
-    await analyze(p.conv);
-    upsert(p.conv);
+    const conv = job.conv;
+    p.step = 3;
+    if(S.mode !== 'off'){ render(); await analyze(conv, S.mode); upsert(conv); }
     p.step = 4;
-    go('naming', {conv: p.conv});
+    S.pending = null; ls.set('comity.pending', null);
+    keepAwake(false);
+    go('naming', {conv});
   }catch(e){
     p.error = e.message || 'Something went wrong. Try again.';
-    if(p.step === 3) p.error += ' Your transcript is saved, so trying again only redoes the analysis.';
+    if(p.step === 3 && !p.fatal) p.error += ' Your transcript is saved, so trying again only redoes the analysis.';
+    keepAwake(false);
     render();
   }
 }
 async function rerunAnalysis(b){
   b.disabled = true; b.textContent = 'Analyzing…'; S.msg = '';
-  try{ if(!S.keys.claude) throw new Error('Add your Claude key in Settings first.'); await analyze(S.conv); upsert(S.conv); }
+  const mode = S.mode !== 'off' ? S.mode : (S.keys.claude ? 'opus' : 'gateway');
+  keepAwake(true);
+  try{ await analyze(S.conv, mode); upsert(S.conv); }
   catch(e){ S.msg = e.message; }
+  keepAwake(false);
   render();
 }
 
@@ -531,30 +713,48 @@ Also write "people": one or two plain sentences per speaker letter describing th
 Reply with ONLY this JSON, no other text:
 {"turns":[{"i":0,"r":"opening","x":false}],"people":{"A":"..."},"overall":"..."}`;
 
-async function analyze(conv){
+async function analyze(conv, mode){
   const T = conv.turns;
   const lines = T.map((t, i) => {
     const prev = T[i-1]; const ov = prev && prev.sp !== t.sp && prev.end > t.start ? ` (starts while ${prev.sp} is still talking, overlap ${((prev.end - t.start)/1000).toFixed(1)}s)` : '';
     return `#${i} [${t.sp}] ${mmss(t.start)}-${mmss(t.end)}${ov}: ${t.text}`;
   }).join('\n');
-  const res = await fetch('https://api.anthropic.com/v1/messages', {method:'POST',
-    headers:{'x-api-key':S.keys.claude, 'anthropic-version':'2023-06-01', 'content-type':'application/json', 'anthropic-dangerous-direct-browser-access':'true'},
-    body: JSON.stringify({model:'claude-opus-5-5', max_tokens:16000, system:SYSTEM,
-      messages:[{role:'user', content:`Speakers: ${speakersOf(conv).join(', ')}. ${T.length} turns.\n\n${lines}`}]})});
-  if(!res.ok){
-    let m = ''; try{ m = (await res.json()).error.message; }catch(e){}
-    throw new Error(res.status === 401 ? 'Claude rejected the key. Check it in Settings.' : 'The analysis failed (' + res.status + ')' + (m ? ': ' + m : '.'));
+  const prompt = `Speakers: ${speakersOf(conv).join(', ')}. ${T.length} turns.\n\n${lines}`;
+  let text = '';
+  if(mode === 'gateway'){
+    if(!S.keys.aai) throw new Error('Add your AssemblyAI key in Settings first.');
+    const r = await net('POST', 'https://llm-gateway.assemblyai.com/v1/chat/completions', {authorization: S.keys.aai, 'content-type':'application/json'},
+      JSON.stringify({model:'claude-sonnet-4-6', max_tokens:16000, messages:[{role:'system', content:SYSTEM}, {role:'user', content:prompt}]}));
+    if(r.status !== 200) throw new Error(apiError('AssemblyAI', r));
+    const d = parse(r.text), m = d.choices && d.choices[0] && d.choices[0].message;
+    text = m ? (Array.isArray(m.content) ? m.content.map(x => x.text || '').join('') : (m.content || '')) : '';
+  } else {
+    if(!S.keys.claude) throw new Error('Add your Claude key in Settings, or switch the listening analysis to Cheaper.');
+    const headers = {'x-api-key':S.keys.claude, 'anthropic-version':'2023-06-01', 'content-type':'application/json'};
+    if(!NATIVE) headers['anthropic-dangerous-direct-browser-access'] = 'true';
+    const r = await net('POST', 'https://api.anthropic.com/v1/messages', headers,
+      JSON.stringify({model:'claude-opus-5-5', max_tokens:16000, system:SYSTEM, messages:[{role:'user', content:prompt}]}));
+    if(r.status !== 200) throw new Error(apiError('Claude', r));
+    text = (parse(r.text).content || []).filter(b => b.type === 'text').map(b => b.text).join('');
   }
-  const data = await res.json();
-  const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
   let out;
   try{ out = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1)); }
-  catch(e){ throw new Error("The analysis came back in a form Comity couldn't read."); }
+  catch(e){ throw new Error("The analysis came back in a form Comity couldn't read. Try again."); }
   const valid = ['opening','backchannel','continue','question_about','follow_up','shift','new_topic_after_finished','topic_jump'];
   (out.turns || []).forEach(o => { const t = T[o.i]; if(t){ t.rel = valid.includes(o.r) ? o.r : null; t.intr = !!o.x; } });
   conv.ai = {people: out.people || {}, overall: out.overall || ''};
 }
 
+/* ---------- start ---------- */
+if(NATIVE){
+  const st = nativeState();
+  if(st.recording){ S.rec = nativeRec(); S.view = 'listening'; startTick(); }
+  else {
+    const orphan = parse(NATIVE.takeOrphan() || '{}');
+    if(orphan.path && !S.pending) saveJob({path: orphan.path, durationMs: orphan.durationMs, created: Date.now()});
+    NATIVE.cleanupAudio(S.pending && S.pending.path || '');
+  }
+}
 render();
 </script>
 

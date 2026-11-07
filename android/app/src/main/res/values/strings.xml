@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Comity</string>
+    <string name="channel_name">Listening</string>
+    <string name="channel_desc">Shows while Comity is listening to a conversation.</string>
+</resources>
